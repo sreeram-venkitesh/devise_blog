@@ -1,6 +1,6 @@
 <% if user_signed_in? %>
   <script type="text/javascript">
-    window.location.href="/notes"  // put your correct path in a string here
+    window.location.href="/notes"
   </script>
 <% else %>
   <%= link_to "Sign in", new_user_session_path %>
