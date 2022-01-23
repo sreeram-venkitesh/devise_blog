@@ -1,7 +1,10 @@
 <% if user_signed_in? %>
- <div> Welcome <%= current_user.email %> </div>
-  <%= link_to "Sign out", destroy_user_session_path, :method => :delete %>
+  <script type="text/javascript">
+    window.location.href="/notes"  // put your correct path in a string here
+  </script>
 <% else %>
   <%= link_to "Sign in", new_user_session_path %>
+  <p>Hello World!</p>
 <% end %>
-<p>Hello World!</p>
+
+
