@@ -62,6 +62,7 @@
 #     auth_methods: %w(publickey)
 #   }
 set :rbenv_map_bins, %w{rake gem bundle ruby rails}
+set :stage, "production"
 
 server "143.244.136.247",
   user: "sreeram",

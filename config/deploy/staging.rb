@@ -59,3 +59,13 @@
 #     auth_methods: %w(publickey password)
 #     # password: "please use keys"
 #   }
+set :rbenv_map_bins, %w{rake gem bundle ruby rails}
+set :stage, "staging"
+
+server "139.59.84.55",
+  user: "sreeram",
+  roles: %w{web app db},
+  ssh_options: {
+    forward_agent: true,
+    auth_methods: %w(publickey)
+  }
