@@ -125,15 +125,7 @@
         name: nginx
         state: latest
 
-    # - name: Install yarn
-    #   become: yes
-    #   become_user: deploy 
-    #   shell: "{{ item }}"
-    #   with_items:
-    #     - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-    #     - echo 'deb https://dl.yarnpkg.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/yarn.list
-    #     - sudo apt update
-    #     - sudo apt install yarn
+
 
     - name: Add Yarn apt key
       apt_key:
@@ -144,19 +136,18 @@
         repo: "deb https://dl.yarnpkg.com/debian/ stable main"
         filename: yarn
 
-    - name: Install Yarn
-      apt:
-        name: yarn
-
+    # - block:
     - name: Install NVM and node
       include_role:
         name: ansible-role-nvm
       vars:
-        nodejs_version: "16.5.0"
+        nodejs_version: "16.4.2"
         default: true
         nvm_dir: "/home/sreeram/.nvm"
+        nvm_profile: "/home/sreeram/.bashrc"
         nvm_install: "curl"
-
+        ansible_become: true
+        ansible_become_user: sreeram
     # - name: Remove NVM nvm_profile
     #   blockinfile:
     #     block: |
@@ -190,4 +181,12 @@
       
     # - name: Set default version of Node if multiple versions exist # noqa 305
     #   shell: "/usr/bin/bash -ic nvm alias default 16.5.0"
-
+    - name: Install yarn
+      become: yes
+      become_user: sreeram 
+      shell: "{{ item }}"
+      with_items:
+        - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+        - echo 'deb https://dl.yarnpkg.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/yarn.list
+        - sudo apt update
+        - sudo apt install yarn
