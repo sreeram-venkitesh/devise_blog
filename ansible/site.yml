@@ -1,0 +1,126 @@
+# ansible/site.yml
+
+---
+- hosts: rails
+  remote_user: root
+  become: yes
+  tasks:
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+    - name: Add deploy user
+      user:
+        name: deploy
+        shell: /bin/bash
+    - name: Add SSH key to server for deploy user
+      authorized_key:
+        user: deploy
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/spCXGRTFfP/J9ZLQuLF4bRf5Pjzx0wAdnLsUAsSBRN30aA9s22uDdw6c6RrEiD0vjsvygGR6g4GixJadzEXaQMZ0fH8hvX63WeUDJzqmXXaaaFz79WSQLKgSKhJcbYRkzrXeOoIqBYwvDRue0QPud9Fu2kPo27tjkrg7ol9zAYyuaxrwdUaKGuHmHqwScIScP7EKVEjPY7Cy4AoIdWryPn5YBmX3DJs48qxRo2pDGlQjVzqQKwswGl0pJVUZQU7p9LZJOE/pQqBLQQ23Iw6VtJaO72rnbZ3nEmKy8XZFUsIKW6E9wZ8hv0cKOG1BKHRClhRmq3tKcEvN3FLM+9PzYp5XZ9iCEGAUW91fJR8b1+cwTpeANRRJqJSswHhBezxjMwnlWOWxooS+x/5VwVKNdzJEwHsVPdBHvPWm2m5PwlIvF/ouS3dfcA2zUOarsn+3W1Jp+4nSJcbdjzvycOWNgif0zVQfWlOnrA8qO1Qnrj6ukA44YzF2GqszMVBE6h8= sreeram@Sreerams-MBP.domain.name"
+    - name: Install Ruby dependencies
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - gcc
+        - autoconf
+        - bison
+        - build-essential
+        - libssl-dev
+        - libyaml-dev
+        - libreadline6-dev
+        - zlib1g-dev
+        - libncurses5-dev
+        - libffi-dev
+        - libgdbm6
+        - libgdbm-dev
+        - sqlite3
+        - libsqlite3-dev
+        - nodejs
+    - name: Install rbenv
+      become: yes
+      become_user: deploy
+      git:
+        repo: "https://github.com/rbenv/rbenv.git"
+        dest: /home/deploy/.rbenv
+        depth: 1
+        accept_hostkey: yes
+        clone: yes
+        update: yes
+
+    - name: Install ruby-build
+      become: yes
+      become_user: deploy
+      git:
+        repo: "https://github.com/rbenv/ruby-build.git"
+        dest: "/home/deploy/.rbenv/plugins/ruby-build"
+        depth: 1
+
+    - name: Install rbenv-vars
+      become: yes
+      become_user: deploy
+      git:
+        repo: "https://github.com/rbenv/rbenv-vars.git"
+        dest: "/home/deploy/.rbenv/plugins/rbenv-vars"
+        depth: 1
+
+    - name: Ensure {{ rbenv_shell_rc }} exists
+      become: true
+      become_user: deploy
+      shell: "touch /home/deploy/.bashrc"
+      args:
+        creates: "/home/deploy/.bashrc"
+
+    - name: Export RBENV_ROOT in /home/deploy/.bashrc
+      become: true
+      become_user: deploy
+      lineinfile:
+        dest: "/home/deploy/.bashrc"
+        regexp: "^export RBENV_ROOT="
+        line: "export RBENV_ROOT=/home/deploy/.rbenv"
+
+    - name: Put rbenv in users PATH in /home/deploy/.bashrc
+      become: true
+      become_user: deploy
+      lineinfile:
+        dest: "/home/deploy/.bashrc"
+        regexp: "^PATH=\\$PATH:\\$RBENV_ROOT/bin"
+        line: "PATH=$RBENV_ROOT/bin:$PATH"
+
+    - name: Put $RBENV_ROOT/shims in users $PATH in /home/deploy/.bashrc
+      become: true
+      become_user: deploy
+      lineinfile:
+        dest: /home/deploy/.bashrc
+        regexp: "^PATH=\\$RBENV_ROOT/shims:\\$PATH"
+        line: "PATH=$RBENV_ROOT/shims:$PATH"
+
+    - name: Install Rubies
+      become: yes
+      become_user: deploy
+      shell: "/home/deploy/.rbenv/bin/rbenv install 3.0.2"
+      args:
+        creates: "/home/deploy/.rbenv/versions/3.0.2"
+      with_flattened:
+      - "3.0.2"
+
+    - name: Check default ruby
+      shell: '/home/deploy/.rbenv/bin/rbenv version | grep -oE "^[^ ]+"'
+      changed_when: no
+      register: rbenv_current_version
+      become: yes
+      become_user: deploy
+
+    - name: Set default ruby
+      shell: "/home/deploy/.rbenv/bin/rbenv global 3.0.2"
+      become: yes
+      become_user: deploy
+      # when: rbenv_current_version.stdout != 3.0.2
+
+    - name: Install Bundler
+      shell: "/home/deploy/.rbenv/shims/gem install bundler"
+      become: yes
+      become_user: deploy
+    
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: latest
