@@ -1,0 +1,18 @@
+[Unit]
+Description=Puma HTTP Server for devise_blog (production)
+After=network.target
+
+[Service]
+Type=simple
+User=sreeram
+WorkingDirectory=/home/sreeram/apps/devise_blog/current
+ExecStart=/home/sreeram/.rbenv/shims/puma -C /home/sreeram/apps/devise_blog/shared/puma.rb
+ExecReload=/bin/kill -TSTP $MAINPID
+StandardOutput=append:/home/sreeram/apps/devise_blog/current/log/puma.access.log
+StandardError=append:/home/sreeram/apps/devise_blog/current/log/puma.error.log
+Restart=always
+RestartSec=1
+SyslogIdentifier=puma
+
+[Install]
+WantedBy=multi-user.target

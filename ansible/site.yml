@@ -120,12 +120,15 @@
       become: yes
       become_user: sreeram
     
+    - name: Install Puma
+      shell: "/home/sreeram/.rbenv/shims/gem install puma -v 5.5.2"
+      become: yes
+      become_user: sreeram
+
     - name: Install nginx
       apt:
         name: nginx
         state: latest
-
-
 
     - name: Add Yarn apt key
       apt_key:
@@ -148,39 +151,7 @@
         nvm_install: "curl"
         ansible_become: true
         ansible_become_user: sreeram
-    # - name: Remove NVM nvm_profile
-    #   blockinfile:
-    #     block: |
-    #       export NVM_DIR="$HOME/.nvm"
-    #       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
-    #     path: "/home/deploy/.bashrc"
-    #     state: absent
-
-    # - name: Install nvm
-    #   git:
-    #     dest: "/home/deploy/.nvm"
-    #     repo: 'https://github.com/nvm-sh/nvm.git'
-       
-
-    # - name: Add NVM to nvm_profile
-    #   blockinfile:
-    #     block: |
-    #       export NVM_DIR="$HOME/.nvm"
-    #       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" #This loads nvm
-    #     create: yes
-    #     marker_begin: "Installed nvm"
-    #     marker_end: "END"
-    #     mode: 0644
-    #     path: "/home/deploy/.bashrc"
-    #     state: present
-
-    # - name: Install Node # noqa 305
-    #   become: yes
-    #   become_user: deploy
-    #   shell: "/usr/bin/bash -ic nvm install 16.5.0"
-      
-    # - name: Set default version of Node if multiple versions exist # noqa 305
-    #   shell: "/usr/bin/bash -ic nvm alias default 16.5.0"
+    
     - name: Install yarn
       become: yes
       become_user: sreeram 
@@ -190,3 +161,37 @@
         - echo 'deb https://dl.yarnpkg.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/yarn.list
         - sudo apt update
         - sudo apt install yarn
+
+    - name: Check if Service Exists
+      stat: path=/etc/systemd/system/puma.service
+      register: puma_service_status
+
+    - name: Create Puma service
+      template: src=puma.service dest=/etc/systemd/system/puma.service mode=644
+      notify:
+        - reload systemctl
+      when: not puma_service_status.stat.exists
+
+    - name: Start Puma service
+      service: name=puma.service state=started enabled=yes
+
+    - name: Remove the default app
+      command: rm -rf /etc/nginx/sites-enabled/default
+
+    - name: Remove the app's symlink, if exists
+      command: rm -rf /etc/nginx/sites-enabled/devise_blog
+
+    - name: Configure nginx for the app
+      template: src=devise_blog.conf.j2 dest=/etc/nginx/sites-available/devise_blog group=www-data owner=www-data force=yes
+
+    - name: Enable the app
+      command: ln -s /etc/nginx/sites-available/devise_blog /etc/nginx/sites-enabled/devise_blog
+
+    - name: Restart nginx
+      action: service name=nginx state=restarted
+
+    - name: Set permissions
+      shell: sudo chown sreeram:sreeram -R apps/devise_blog/
+
+
+    
