@@ -9,7 +9,6 @@ ruby_version: 3.0.2
 nodejs_version: "16.4.2"
 nvm_dir: "/home/{{ user }}/.nvm"
 nvm_profile: "/home/{{ user }}/.bashrc"
-nvm_install: "curl"
 autocomplete: false
 default: false
 nvm_commands: []

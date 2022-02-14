@@ -8,13 +8,13 @@
   command: rm -rf /etc/nginx/sites-enabled/default
 
 - name: Remove the app's symlink, if exists
-  command: rm -rf /etc/nginx/sites-enabled/{{ app_name }}
+  command: rm -rf /etc/nginx/sites-enabled/default
 
 - name: Configure nginx for the app
-  template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }} group=www-data owner=www-data force=yes
+  template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/default group=www-data owner=www-data force=yes
 
 - name: Enable the app
-  command: ln -s /etc/nginx/sites-available/{{ app_name }} /etc/nginx/sites-enabled/{{ app_name }}
+  command: ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 - name: Restart nginx
   action: service name=nginx state=restarted

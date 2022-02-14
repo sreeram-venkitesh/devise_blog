@@ -12,7 +12,7 @@
       become_user: "{{ user }}"
     - yarn
     - puma
-    - role: nginx
-      become: true
-      become_user: "{{ user }}"
+    - nginx
+
+
 
