@@ -1,0 +1,56 @@
+---
+- name: Set up rbenv and ruby
+  become: true
+  become_user: "{{ user }}"
+  block:
+    - name: Install rbenv
+      git:
+        repo: "https://github.com/rbenv/rbenv.git"
+        dest: /home/{{ user }}/.rbenv
+        depth: 1
+        accept_hostkey: yes
+        clone: yes
+        update: yes
+    - name: Install ruby-build
+      git:
+        repo: "https://github.com/rbenv/ruby-build.git"
+        dest: "/home/{{ user }}/.rbenv/plugins/ruby-build"
+        depth: 1
+    - name: Install rbenv-vars
+      git:
+        repo: "https://github.com/rbenv/rbenv-vars.git"
+        dest: "/home/{{ user }}/.rbenv/plugins/rbenv-vars"
+        depth: 1
+    - name: Ensure .bashrc exists
+      shell: "touch /home/{{ user }}/.bashrc"
+      args:
+        creates: "/home/{{ user }}/.bashrc"
+    - name: Export RBENV_ROOT in /home/{{ user }}/.bashrc
+      lineinfile:
+        dest: "/home/{{ user }}/.bashrc"
+        regexp: "^export RBENV_ROOT="
+        line: "export RBENV_ROOT=/home/{{ user }}/.rbenv"
+    - name: Put rbenv in users PATH in /home/{{ user }}/.bashrc
+      lineinfile:
+        dest: "/home/{{ user }}/.bashrc"
+        regexp: "^PATH=\\$PATH:\\$RBENV_ROOT/bin"
+        line: "PATH=$RBENV_ROOT/bin:$PATH"
+    - name: Put $RBENV_ROOT/shims in users $PATH in /home/{{ user }}/.bashrc
+      lineinfile:
+        dest: /home/{{ user }}/.bashrc
+        regexp: "^PATH=\\$RBENV_ROOT/shims:\\$PATH"
+        line: "PATH=$RBENV_ROOT/shims:$PATH"
+    - name: Install Ruby
+      shell: "/home/{{ user }}/.rbenv/bin/rbenv install {{ ruby_version }}"
+      args:
+        creates: "/home/{{ user }}/.rbenv/versions/{{ ruby_version }}"
+      with_flattened:
+      - "3.0.2"
+    - name: Check default ruby
+      shell: '/home/{{ user }}/.rbenv/bin/rbenv version | grep -oE "^[^ ]+"'
+      changed_when: no
+      register: rbenv_current_version
+    - name: Set default ruby
+      shell: "/home/{{ user }}/.rbenv/bin/rbenv global {{ ruby_version }}"
+    - name: Install Bundler
+      shell: "/home/{{ user }}/.rbenv/shims/gem install bundler"

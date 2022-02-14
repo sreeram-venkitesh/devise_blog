@@ -1,0 +1,30 @@
+---
+- name: Update all packages to the latest version
+  apt:
+    upgrade: dist
+- name: Add deploy user
+  user:
+    name: "{{ user }}"
+    shell: /bin/bash
+- name: Add SSH key to server for deploy user
+  authorized_key:
+    user: "{{ user }}"
+    key: "{{ ssh_key }}"
+- name: Install Ruby dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - gcc
+    - autoconf
+    - bison
+    - build-essential
+    - libssl-dev
+    - libyaml-dev
+    - libreadline6-dev
+    - zlib1g-dev
+    - libncurses5-dev
+    - libffi-dev
+    - libgdbm6
+    - libgdbm-dev
+    - sqlite3
+    - libsqlite3-dev

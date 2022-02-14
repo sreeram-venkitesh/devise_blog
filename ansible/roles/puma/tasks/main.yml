@@ -1,0 +1,22 @@
+---
+- name: Install Puma
+  shell: "/home/{{ user }}/.rbenv/shims/gem install puma -v {{ puma_version }}"
+  become: true
+  become_user: "{{ user }}"
+
+- name: Check if Service Exists
+  stat: path=/etc/systemd/system/puma.service
+  register: puma_service_status
+
+- name: Create Puma service
+  template: src=puma.service dest=/etc/systemd/system/puma.service mode=644
+  notify:
+    - reload systemctl
+  when: not puma_service_status.stat.exists
+
+- name: Start Puma service
+  service: name=puma.service state=started enabled=yes
+
+- name: Set permissions
+  shell: sudo chown {{ user }}:{{ user }} -R {{ deploy_dir }}{{ app_name }}
+

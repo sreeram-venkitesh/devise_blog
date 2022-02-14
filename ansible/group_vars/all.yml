@@ -1,0 +1,19 @@
+user: sreeram
+deploy_dir: /home/{{user}}/apps/
+app_name: devise_blog/
+puma_version: 5.5.2
+ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/spCXGRTFfP/J9ZLQuLF4bRf5Pjzx0wAdnLsUAsSBRN30aA9s22uDdw6c6RrEiD0vjsvygGR6g4GixJadzEXaQMZ0fH8hvX63WeUDJzqmXXaaaFz79WSQLKgSKhJcbYRkzrXeOoIqBYwvDRue0QPud9Fu2kPo27tjkrg7ol9zAYyuaxrwdUaKGuHmHqwScIScP7EKVEjPY7Cy4AoIdWryPn5YBmX3DJs48qxRo2pDGlQjVzqQKwswGl0pJVUZQU7p9LZJOE/pQqBLQQ23Iw6VtJaO72rnbZ3nEmKy8XZFUsIKW6E9wZ8hv0cKOG1BKHRClhRmq3tKcEvN3FLM+9PzYp5XZ9iCEGAUW91fJR8b1+cwTpeANRRJqJSswHhBezxjMwnlWOWxooS+x/5VwVKNdzJEwHsVPdBHvPWm2m5PwlIvF/ouS3dfcA2zUOarsn+3W1Jp+4nSJcbdjzvycOWNgif0zVQfWlOnrA8qO1Qnrj6ukA44YzF2GqszMVBE6h8= sreeram@Sreerams-MBP.domain.name
+ruby_version: 3.0.2
+
+# Options for nvm and node
+nodejs_version: "16.4.2"
+nvm_dir: "/home/{{ user }}/.nvm"
+nvm_profile: "/home/{{ user }}/.bashrc"
+nvm_install: "curl"
+autocomplete: false
+default: false
+nvm_commands: []
+nvm_source: ""
+nvm_version: "0.38.0"
+uninstall: false
+user_nvm_path: /home/{{ user }}/.nvm/nvm.sh
